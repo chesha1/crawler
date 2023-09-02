@@ -38,7 +38,7 @@ def delete_smaller_duplicate(files_info, current_dir):
 
 
 if __name__ == "__main__":
-    target_dir = input("Please enter the directory path: ")
+    target_dir = os.path.expanduser('~/Library/CloudStorage/OneDrive-123/文件/resources/p_toplist')
 
     # Check if the provided directory path exists
     if os.path.isdir(target_dir):

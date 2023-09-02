@@ -424,9 +424,9 @@ def crawler_single_from_day_toplist_with_input_year(path, year):
 
 # path should end with '/'
 # path = ''
-path = ''
-single_url_file_path = ''
-id_file_path = ''
+path = os.path.expanduser('~/Library/CloudStorage/OneDrive-123/文件/resources/p_toplist/2023q3/')
+single_url_file_path = 'url_list.txt'
+id_file_path = 'id_list.txt'
 series_id = 9323428
 url_xhr = "https://www.pixiv.net/ajax/user/18590339/novels/bookmarks?tag=%E6%9C%AA%E5%AE%8C%E7%BB%93&offset=96&limit=24&rest=show&lang=zh&version=f32089e9d176912e655d9eda2c1b816e46a82d4b"
 start_date = 20210401
@@ -465,7 +465,7 @@ process = subprocess.Popen([
 # crawler_single_from_day_toplist(path, start_date, end_date)
 
 # 7. 从一页 toplist 里获取这一页的所有中文小说，不溯源所在的系列，日期范围是输入的年份和月份，格式如 2023, 1
-crawler_single_from_day_toplist_with_input_month(path, year, month)
+# crawler_single_from_day_toplist_with_input_month(path, year, month)
 
 # 8. 从一页 toplist 里获取这一页的所有中文小说，不溯源所在的系列，日期范围是输入的年份和季度，格式如 2023, 1
 # crawler_single_from_day_toplist_with_input_quarter(path, year, quarter)

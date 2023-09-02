@@ -37,7 +37,7 @@ process = subprocess.Popen([
     "--user-data-dir=" + os.path.expanduser('~/ChromeProfile')
 ])
 
-path = "ources/bili_images/"
+path = os.path.expanduser('~/Library/CloudStorage/OneDrive-123/文件/resources/bili_images')
 
 for url in url_json_list:
     options = webdriver.ChromeOptions()
