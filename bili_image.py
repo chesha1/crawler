@@ -34,7 +34,7 @@ url_json_list = [url_prefix + i for i in id]
 process = subprocess.Popen([
     "Google Chrome",
     "--remote-debugging-port=19222",
-    "--user-data-dir=" + os.path.expanduser('~/ChromeProfile')
+    "--user-data-dir=" + os.path.expanduser('~/ChromeProfile/')
 ])
 
 path = os.path.expanduser('~/Library/CloudStorage/OneDrive-123/文件/resources/bili_images')
@@ -42,7 +42,10 @@ path = os.path.expanduser('~/Library/CloudStorage/OneDrive-123/文件/resources/
 for url in url_json_list:
     options = webdriver.ChromeOptions()
     options.add_experimental_option("debuggerAddress", "127.0.0.1:19222")
-    with webdriver.Chrome(options=options) as browser:
+    options.add_argument('--ignore-certificate-errors')
+    options.add_argument('--ignore-ssl-errors')
+    service = webdriver.ChromeService(executable_path='/opt/homebrew/bin/chromedriver')
+    with webdriver.Chrome(service=service, options=options) as browser:
         browser.get(url)
 
         # 获取所有的cookies

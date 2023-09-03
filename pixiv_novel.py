@@ -68,8 +68,11 @@ def crawler(url, path):
 
     options = webdriver.ChromeOptions()
     options.add_experimental_option("debuggerAddress", "127.0.0.1:19222")
+    options.add_argument('--ignore-certificate-errors')
+    options.add_argument('--ignore-ssl-errors')
+    service = webdriver.ChromeService(executable_path='/opt/homebrew/bin/chromedriver')
     # 使用 Chrome 驱动
-    with webdriver.Chrome(options=options) as browser:
+    with webdriver.Chrome(service=service, options=options) as browser:
         browser.get(url)
 
         # 获取所有的cookies
@@ -139,8 +142,11 @@ def get_series_list(url):
 def get_url_list_from_page_xhr(url):
     options = webdriver.ChromeOptions()
     options.add_experimental_option("debuggerAddress", "127.0.0.1:19222")
+    options.add_argument('--ignore-certificate-errors')
+    options.add_argument('--ignore-ssl-errors')
+    service = webdriver.ChromeService(executable_path='/opt/homebrew/bin/chromedriver')
     # 使用 Chrome 驱动
-    with webdriver.Chrome(options=options) as browser:
+    with webdriver.Chrome(service=service, options=options) as browser:
         browser.get(url)
 
         # 获取所有的cookies
@@ -298,8 +304,11 @@ def crawler_single_from_day_toplist(path, start_date, end_date):
     for page_url in tqdm(page_url_list, desc="Collecting URLs", file=sys.stdout):
         options = webdriver.ChromeOptions()
         options.add_experimental_option("debuggerAddress", "127.0.0.1:19222")
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--ignore-ssl-errors')
+        service = webdriver.ChromeService(executable_path='/opt/homebrew/bin/chromedriver')
         # 使用 Chrome 驱动
-        with webdriver.Chrome(options=options) as browser:
+        with webdriver.Chrome(service=service, options=options) as browser:
             browser.get(page_url)
 
             # 获取所有的cookies
@@ -423,7 +432,6 @@ def crawler_single_from_day_toplist_with_input_year(path, year):
 
 
 # path should end with '/'
-# path = ''
 path = os.path.expanduser('~/Library/CloudStorage/OneDrive-123/文件/resources/p_toplist/2023q3/')
 single_url_file_path = 'url_list.txt'
 id_file_path = 'id_list.txt'
