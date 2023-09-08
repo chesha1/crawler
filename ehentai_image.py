@@ -19,15 +19,60 @@ def get_download_url_list_from_id(id, num, id_encry, page):
         next_url = soup.find('a', id='next')['href']
         if next_url == current_url:
             print('Reach final page: {}'.format(next_url))
+            download_link = soup.find('a', string=lambda text: text and 'Download original' in text)
+            if download_link is None:
+                download_small_images(id, num, id_encry, page)
+                return None
+            else:
+                result_url_list.append(download_link['href'])
             break
-        current_url = next_url
-        download_link = soup.find('a', string=lambda text: text and 'Download original' in text)
-        result_url_list.append(download_link['href'])
-        time.sleep(3)
+        else:
+            current_url = next_url
+            download_link = soup.find('a', string=lambda text: text and 'Download original' in text)
+            if download_link is None:
+                download_small_images(id, num, id_encry, page)
+                return None
+            else:
+                result_url_list.append(download_link['href'])
+            time.sleep(3)
 
     print("共采集到{}页".format(len(result_url_list)))
     print("-------------------------------------------------")
     return result_url_list
+
+def download_single_file_using_requests(url):
+    if url=='https://ehgt.org/g/509.gif':
+        print("Reach the limit")
+        sys.exit()
+    response = requests.get(url=url, headers=headers, proxies=proxies)
+    if response.status_code == 200:
+        # 从URL中提取文件名
+        filename = os.path.basename(url.split(';')[2].split('=')[1])
+
+        # 将内容保存为文件
+        with open(filename, "wb") as f:
+            f.write(response.content)
+
+
+def download_small_images(id, num, id_encry, page):
+    initial_url = 'https://e-hentai.org/s/{}/{}-{}'.format(id_encry, id, page)
+    current_url = initial_url
+    for i in tqdm(range(num), desc="Downloading images", file=sys.stdout):
+        response = requests.get(current_url, headers=headers, proxies=proxies)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        next_url = soup.find('a', id='next')['href']
+        if next_url == current_url:
+            print('Reach final page: {}'.format(next_url))
+            download_link = soup.find('img', id='img')['src']
+            download_single_file_using_requests(download_link)
+            break
+        else:
+            current_url = next_url
+            download_link = soup.find('img', id='img')['src']
+            download_single_file_using_requests(download_link)
+            time.sleep(5)
+
+
 
 
 def download_single_file_using_selenium(url):
@@ -48,6 +93,8 @@ def download_single_file_using_selenium(url):
 
 
 def download_images_from_list(url_list):
+    if url_list is None:
+        return
     for url in tqdm(url_list, desc="Downloading images", file=sys.stdout):
         download_single_file_using_selenium(url)
 
@@ -68,10 +115,10 @@ headers = {
 }
 
 # change parameters here
-id = '2632029'
+id = '2658449'
 num = 40
-id_encry = '7eb4bedaf7'
-page = 481
+id_encry = 'c3aa340d44'
+page = 201
 
 url_list = get_download_url_list_from_id(id, num, id_encry, page)
 download_images_from_list(url_list)
