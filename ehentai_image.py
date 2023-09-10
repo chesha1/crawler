@@ -17,31 +17,27 @@ def get_download_url_list_from_id(id, num, id_encry, page):
         response = requests.get(current_url, headers=headers, proxies=proxies)
         soup = BeautifulSoup(response.content, 'html.parser')
         next_url = soup.find('a', id='next')['href']
+        download_link = soup.find('a', string=lambda text: text and 'Download original' in text)
+        if download_link is None:
+            download_small_images(id, num, id_encry, page)
+            return None
+        else:
+            result_url_list.append(download_link['href'])
+
         if next_url == current_url:
             print('Reach final page: {}'.format(next_url))
-            download_link = soup.find('a', string=lambda text: text and 'Download original' in text)
-            if download_link is None:
-                download_small_images(id, num, id_encry, page)
-                return None
-            else:
-                result_url_list.append(download_link['href'])
             break
         else:
             current_url = next_url
-            download_link = soup.find('a', string=lambda text: text and 'Download original' in text)
-            if download_link is None:
-                download_small_images(id, num, id_encry, page)
-                return None
-            else:
-                result_url_list.append(download_link['href'])
             time.sleep(3)
 
     print("共采集到{}页".format(len(result_url_list)))
     print("-------------------------------------------------")
     return result_url_list
 
+
 def download_single_file_using_requests(url):
-    if url=='https://ehgt.org/g/509.gif':
+    if url == 'https://ehgt.org/g/509.gif':
         print("Reach the limit")
         sys.exit()
     response = requests.get(url=url, headers=headers, proxies=proxies)
@@ -61,18 +57,15 @@ def download_small_images(id, num, id_encry, page):
         response = requests.get(current_url, headers=headers, proxies=proxies)
         soup = BeautifulSoup(response.content, 'html.parser')
         next_url = soup.find('a', id='next')['href']
+        download_link = soup.find('img', id='img')['src']
+        download_single_file_using_requests(download_link)
+
         if next_url == current_url:
             print('Reach final page: {}'.format(next_url))
-            download_link = soup.find('img', id='img')['src']
-            download_single_file_using_requests(download_link)
             break
         else:
             current_url = next_url
-            download_link = soup.find('img', id='img')['src']
-            download_single_file_using_requests(download_link)
             time.sleep(5)
-
-
 
 
 def download_single_file_using_selenium(url):
@@ -115,9 +108,9 @@ headers = {
 }
 
 # change parameters here
-id = '2658449'
-num = 40
-id_encry = 'c3aa340d44'
+id = '2628487'
+num = 80
+id_encry = 'c19ef1dcf7'
 page = 201
 
 url_list = get_download_url_list_from_id(id, num, id_encry, page)
