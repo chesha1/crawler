@@ -31,8 +31,8 @@ def get_download_url_list_from_id(id, num, id_encry, page):
         next_url = soup.find('a', id='next')['href']
         download_link = soup.find('a', string=lambda text: text and 'Download original' in text)
         if download_link is None:
-            download_small_images(id, num, id_encry, page)
-            return None
+            download_link_small = soup.find('img', id='img')['src']
+            download_single_file_using_requests(download_link_small)
         else:
             result_url_list.append(download_link['href'])
 
@@ -60,24 +60,6 @@ def download_single_file_using_requests(url):
         # 将内容保存为文件
         with open(filename, "wb") as f:
             f.write(response.content)
-
-
-def download_small_images(id, num, id_encry, page):
-    initial_url = 'https://e-hentai.org/s/{}/{}-{}'.format(id_encry, id, page)
-    current_url = initial_url
-    for i in tqdm(range(num), desc="Downloading images", file=sys.stdout):
-        response = requests.get(current_url, headers=headers, proxies=proxies)
-        soup = BeautifulSoup(response.content, 'html.parser')
-        next_url = soup.find('a', id='next')['href']
-        download_link = soup.find('img', id='img')['src']
-        download_single_file_using_requests(download_link)
-
-        if next_url == current_url:
-            print('Reach final page: {}'.format(next_url))
-            break
-        else:
-            current_url = next_url
-            time.sleep(5)
 
 
 def download_single_file_using_selenium(url):
@@ -120,11 +102,10 @@ headers = {
 }
 
 # change parameters here
-# TODO: some images are larger while others are small , e.g. id 2669265, fix it
 id = '2669265'
-num = 79
-id_encry = '8725bbec4e'
-page = 2
+num = 120
+id_encry = 'a9a89f7248'
+page = 361
 
 url_list = get_download_url_list_from_id(id, num, id_encry, page)
 download_images_from_list(url_list)
