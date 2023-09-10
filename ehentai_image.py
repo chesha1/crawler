@@ -1,4 +1,5 @@
 import requests
+from requests.exceptions import RequestException
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import time
@@ -14,7 +15,18 @@ def get_download_url_list_from_id(id, num, id_encry, page):
     result_url_list = []
     current_url = initial_url
     for i in tqdm(range(num), desc="Collecting URLs", file=sys.stdout):
-        response = requests.get(current_url, headers=headers, proxies=proxies)
+        MAX_RETRIES = 5  # 设置最大重试次数
+        attempts = 0
+        while attempts < MAX_RETRIES:
+            try:
+                response = requests.get(current_url, headers=headers, proxies=proxies)
+                break
+            except RequestException as e:
+                print(f"An error occurred: {e}. Retrying...")
+                attempts += 1
+            if attempts == MAX_RETRIES:
+                print("Max retries reached. Exiting.")
+
         soup = BeautifulSoup(response.content, 'html.parser')
         next_url = soup.find('a', id='next')['href']
         download_link = soup.find('a', string=lambda text: text and 'Download original' in text)
@@ -108,10 +120,11 @@ headers = {
 }
 
 # change parameters here
-id = '2628487'
-num = 80
-id_encry = 'c19ef1dcf7'
-page = 201
+# TODO: some images are larger while others are small , e.g. id 2669265, fix it
+id = '2669265'
+num = 79
+id_encry = '8725bbec4e'
+page = 2
 
 url_list = get_download_url_list_from_id(id, num, id_encry, page)
 download_images_from_list(url_list)
