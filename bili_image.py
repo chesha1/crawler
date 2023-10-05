@@ -4,6 +4,7 @@ from selenium import webdriver
 import requests
 import json
 import os
+import time
 
 
 def download(url, file_name):
@@ -71,6 +72,7 @@ for url in url_json_list:
             print(strl[5])
         print(str(url) + " finished.")
         print("-----------------------------------------------------------------------------------------------------")
+    time.sleep(3)
 
 with open("bili.txt", "r+") as f:
     f.truncate(0)

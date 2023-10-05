@@ -10,8 +10,11 @@ from tqdm import tqdm
 import sys
 
 
-def get_download_url_list_from_id(id, num, id_encry, page):
-    initial_url = 'https://e-hentai.org/s/{}/{}-{}'.format(id_encry, id, page)
+def get_download_url_list_from_id(id, num, id_encry, page, ex=False):
+    if not ex:
+        initial_url = 'https://e-hentai.org/s/{}/{}-{}'.format(id_encry, id, page)
+    else:
+        initial_url = 'https://exhentai.org/s/{}/{}-{}'.format(id_encry, id, page)
     result_url_list = []
     current_url = initial_url
     for i in tqdm(range(num), desc="Collecting URLs", file=sys.stdout):
@@ -19,7 +22,26 @@ def get_download_url_list_from_id(id, num, id_encry, page):
         attempts = 0
         while attempts < MAX_RETRIES:
             try:
-                response = requests.get(current_url, headers=headers, proxies=proxies)
+                if not ex:
+                    response = requests.get(current_url, headers=headers, proxies=proxies)
+                else:
+                    options = webdriver.ChromeOptions()
+                    options.add_argument("--headless")  # 运行浏览器在后台模式
+                    options = webdriver.ChromeOptions()
+                    options.add_experimental_option("debuggerAddress", "127.0.0.1:19222")
+                    options.add_argument('--ignore-certificate-errors')
+                    options.add_argument('--ignore-ssl-errors')
+                    service = webdriver.ChromeService(executable_path='/opt/homebrew/bin/chromedriver')
+
+                    # 启动浏览器
+                    with webdriver.Chrome(service=service, options=options) as browser:
+                        browser.get(current_url)
+                        all_cookies = browser.get_cookies()
+                        s = requests.Session()
+                        for cookie in all_cookies:
+                            s.cookies.set(cookie['name'], cookie['value'])
+
+                        response = s.get(current_url, headers=headers, proxies=proxies)
                 break
             except RequestException as e:
                 print(f"An error occurred: {e}. Retrying...")
@@ -102,12 +124,19 @@ headers = {
 }
 
 # change parameters here
-id = '2669265'
-num = 120
-id_encry = 'a9a89f7248'
-page = 361
+# id: 作品 id
+# num: 一共爬取多少页
+# page: 从第几页开始
+# id_encry: 那一页的链接的 id
+# ex: 是否是 exhentai 的作用，不是（默认）就是 False
 
-url_list = get_download_url_list_from_id(id, num, id_encry, page)
+id = '2683205'
+num = 80
+id_encry = '0f4e86caab'
+page = 1
+ex = False
+
+url_list = get_download_url_list_from_id(id, num, id_encry, page, ex)
 download_images_from_list(url_list)
 
 os.kill(process.pid, signal.SIGTERM)
