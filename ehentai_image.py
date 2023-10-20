@@ -74,7 +74,19 @@ def download_single_file_using_requests(url):
     if url == 'https://ehgt.org/g/509.gif':
         print("Reach the limit")
         sys.exit()
-    response = requests.get(url=url, headers=headers, proxies=proxies)
+
+    MAX_RETRIES = 5  # 设置最大重试次数
+    attempts = 0
+    while attempts < MAX_RETRIES:
+        try:
+            response = requests.get(url=url, headers=headers, proxies=proxies)
+            break
+        except RequestException as e:
+            print(f"An error occurred: {e}. Retrying...")
+            attempts += 1
+        if attempts == MAX_RETRIES:
+            print("Max retries reached. Exiting.")
+
     if response.status_code == 200:
         # 从URL中提取文件名
         filename = os.path.basename(url.split(';')[2].split('=')[1])
@@ -130,10 +142,10 @@ headers = {
 # id_encry: 那一页的链接的 id
 # ex: 是否是 exhentai 的作用，不是（默认）就是 False
 
-id = '2683205'
-num = 80
-id_encry = '0f4e86caab'
-page = 1
+id = '2710570'
+num = 120
+id_encry = '8dcc4514ff'
+page = 201
 ex = False
 
 url_list = get_download_url_list_from_id(id, num, id_encry, page, ex)

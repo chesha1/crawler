@@ -20,5 +20,5 @@ def clean_filenames_in_directory(directory_path):
                     new_filepath = os.path.join(root, new_filename)
                     os.rename(filepath, new_filepath)
 
-directory_path = os.path.expanduser('~/Downloads/torrent_p/[皮三豆]祈求光明的百合1-2(中文无修)/2')
+directory_path = os.path.expanduser('~/Downloads/torrent_p/失忆美母变新娘 01-02/2')
 clean_filenames_in_directory(directory_path)
