@@ -1,21 +1,11 @@
-import subprocess
-
-from selenium import webdriver
 import os
 
-process = subprocess.Popen([
-    "Google Chrome",
-    "--remote-debugging-port=19222",
-    "--user-data-dir=" + os.path.expanduser('~/ChromeProfile/')
-])
-options = webdriver.ChromeOptions()
-options.add_experimental_option("debuggerAddress", "127.0.0.1:19222")
-options.add_argument('--ignore-certificate-errors')
-options.add_argument('--ignore-ssl-errors')
+import requests
 
-service = webdriver.ChromeService(executable_path='/opt/homebrew/bin/chromedriver')
+# 设置socks5代理环境变量
+os.environ['HTTP_PROXY'] = 'socks5h://127.0.0.1:7890'
+os.environ['HTTPS_PROXY'] = 'socks5h://127.0.0.1:7890'
 
-browser = webdriver.Chrome(service=service, options=options)
+response = requests.get('https://www.google.com/')
 
-browser.get('https://t.bilibili.com/836752529413898288#reply184432979280')
-print("aaa")
+print('aaa')
