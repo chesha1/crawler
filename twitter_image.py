@@ -7,11 +7,11 @@ os.environ['HTTP_PROXY'] = 'socks5h://127.0.0.1:7890'
 os.environ['HTTPS_PROXY'] = 'socks5h://127.0.0.1:7890'
 
 # 定义你的API凭据
-consumer_key = 'gl5gBMwPz614uqT8qeDShj5zz'
-consumer_secret = 'VJflaybP4tTiy2XFuwwG578Z8IYqsCmOhiNZu0uQ8VpF4XEFbB'
-access_token = '1070311404790603776-K0WlVjvxY7aV4gB7vZqOWLP1QaXq23'
-access_token_secret = 'Jk28nj0Rq68eFs3WCAHYoOfNZmUK42lALWYHhMwWIsvIp'
-bearer_token = "AAAAAAAAAAAAAAAAAAAAAEGeqgEAAAAAUZ%2B5JxPYT96C7DzjMEEPrT%2FjjGg%3D64yghGuWqrZvTJ1mMsUZDY8LKCFF0vCgtuHY3ZjAzXNcQMEIij"
+consumer_key = ''
+consumer_secret = ''
+access_token = ''
+access_token_secret = ''
+bearer_token = ""
 
 
 client = tweepy.Client(bearer_token)

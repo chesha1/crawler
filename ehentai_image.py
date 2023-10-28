@@ -13,13 +13,10 @@ import sys
 
 # def get_download_url_list_from_id(id, num, id_encry, page, ex=False):
 def get_download_url_list_from_id(initial_url, num, ex=False):
-    # if not ex:
-    #     initial_url = 'https://e-hentai.org/s/{}/{}-{}'.format(id_encry, id, page)
-    # else:
-    #     initial_url = 'https://exhentai.org/s/{}/{}-{}'.format(id_encry, id, page)
     result_url_list = []
     current_url = initial_url
-    for i in tqdm(range(num), desc="Collecting URLs", file=sys.stdout):
+    pbar = tqdm(range(num), desc="Collecting URLs", file=sys.stdout)
+    for i in pbar:
         MAX_RETRIES = 5  # 设置最大重试次数
         attempts = 0
         while attempts < MAX_RETRIES:
@@ -58,6 +55,8 @@ def get_download_url_list_from_id(initial_url, num, ex=False):
             download_link_small = soup.find('img', id='img')['src']
             download_single_file_using_requests(download_link_small)
         else:
+            pbar.set_postfix(current=current_url, refresh=True)
+            download_image_from_single_url(download_link['href'])
             result_url_list.append(download_link['href'])
 
         if next_url == current_url:
@@ -65,7 +64,7 @@ def get_download_url_list_from_id(initial_url, num, ex=False):
             break
         else:
             current_url = next_url
-            time.sleep(2)
+            time.sleep(5)
 
     print("共采集到{}页".format(len(result_url_list)))
     print("-------------------------------------------------")
@@ -101,59 +100,52 @@ def download_single_file_using_requests(url):
             f.write(response.content)
     time.sleep(2)
 
-
-def download_single_file_using_selenium(url):
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")  # 运行浏览器在后台模式
+def download_image_from_single_url(url):
     options = webdriver.ChromeOptions()
     options.add_experimental_option("debuggerAddress", "127.0.0.1:19222")
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--ignore-ssl-errors')
     service = webdriver.ChromeService(executable_path='/opt/homebrew/bin/chromedriver')
 
-    # 启动浏览器
     with webdriver.Chrome(service=service, options=options) as browser:
-        browser.get(url)
-        current_url = browser.current_url
-        download_single_file_using_requests(current_url)
+        browser.set_page_load_timeout(30)
 
-        # 等待下载完成（根据实际情况调整）
-        time.sleep(5)  # 假设文件在10秒内下载完成，可能需要调整
-
-
-def download_images_from_list(url_list):
-    if url_list is None:
-        return
-    for url in tqdm(url_list, desc="Downloading Images", file=sys.stdout):
-
-        options = webdriver.ChromeOptions()
-        options = webdriver.ChromeOptions()
-        options.add_experimental_option("debuggerAddress", "127.0.0.1:19222")
-        options.add_argument('--ignore-certificate-errors')
-        options.add_argument('--ignore-ssl-errors')
-        service = webdriver.ChromeService(executable_path='/opt/homebrew/bin/chromedriver')
-
-        # 启动浏览器
-        with webdriver.Chrome(service=service, options=options) as browser:
-            browser.set_page_load_timeout(30)
+        MAX_RETRIES = 5
+        attempts = 0
+        while attempts < MAX_RETRIES:
             try:
                 browser.get(url)
+                break
             except TimeoutException:
                 print("页面加载超时，正在刷新...")
+                attempts += 1
+            if attempts == MAX_RETRIES:
+                print("Max retries reached. Exiting.")
+
+        current_url = browser.current_url
+        time.sleep(2)
+
+        all_cookies = browser.get_cookies()
+        s = requests.Session()
+        for cookie in all_cookies:
+            s.cookies.set(cookie['name'], cookie['value'])
+
+        MAX_RETRIES = 5
+        attempts = 0
+        while attempts < MAX_RETRIES:
+            try:
+                response = s.get(current_url, headers=headers, proxies=proxies, timeout=10)
+                break
+            except requests.exceptions.ConnectionError as e:
+                print(f"An error occurred: {e}. Retrying...")
+                attempts += 1
                 browser.refresh()
-            current_url = browser.current_url
-            time.sleep(2)
+            if attempts == MAX_RETRIES:
+                print("Max retries reached. Exiting.")
+        filename = os.path.basename(current_url.split(';')[2].split('=')[1])
 
-            all_cookies = browser.get_cookies()
-            s = requests.Session()
-            for cookie in all_cookies:
-                s.cookies.set(cookie['name'], cookie['value'])
-
-            response = s.get(current_url, headers=headers, proxies=proxies)
-            filename = os.path.basename(current_url.split(';')[2].split('=')[1])
-
-            with open(os.path.expanduser('~/Downloads/') + filename, "wb") as f:
-                f.write(response.content)
+        with open(os.path.expanduser('~/Downloads/') + filename, "wb") as f:
+            f.write(response.content)
 
 
 process = subprocess.Popen([
@@ -172,18 +164,10 @@ headers = {
 }
 
 # change parameters here
-# id: 作品 id
-# num: 一共爬取多少页
-# page: 从第几页开始
-# id_encry: 那一页的链接的 id
-# ex: 是否是 exhentai 的作用，不是（默认）就是 False
-
-initial_url = "https://e-hentai.org/s/64936ea86d/2717887-41"
-num = 200
+initial_url = 'https://e-hentai.org/s/a36dbe168e/2717890-125'
+num = 400
 ex = False
 
-# url_list = get_download_url_list_from_id(id, num, id_encry, page, ex)
 url_list = get_download_url_list_from_id(initial_url, num, ex)
-download_images_from_list(url_list)
 
 os.kill(process.pid, signal.SIGTERM)
