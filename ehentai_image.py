@@ -100,6 +100,7 @@ def download_single_file_using_requests(url):
             f.write(response.content)
     time.sleep(2)
 
+
 def download_image_from_single_url(url):
     options = webdriver.ChromeOptions()
     options.add_experimental_option("debuggerAddress", "127.0.0.1:19222")
@@ -148,6 +149,44 @@ def download_image_from_single_url(url):
             f.write(response.content)
 
 
+def get_num_of_pages_from_gallery_url(url, ex):
+    if not ex:
+        response = requests.get(url, headers=headers, proxies=proxies)
+    else:
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless")  # 运行浏览器在后台模式
+        options = webdriver.ChromeOptions()
+        options.add_experimental_option("debuggerAddress", "127.0.0.1:19222")
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--ignore-ssl-errors')
+        service = webdriver.ChromeService(executable_path='/opt/homebrew/bin/chromedriver')
+
+        # 启动浏览器
+        with webdriver.Chrome(service=service, options=options) as browser:
+            browser.get(url)
+            all_cookies = browser.get_cookies()
+            s = requests.Session()
+            for cookie in all_cookies:
+                s.cookies.set(cookie['name'], cookie['value'])
+
+            response = s.get(url, headers=headers, proxies=proxies)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    # 直接寻找包含'Length:'的td标签
+    length_label = soup.find('td', string='Length:')
+
+    if length_label:
+        # 找到标签后，获取相邻的兄弟td标签
+        length_value_td = length_label.find_next_sibling('td', class_='gdt2')
+        if length_value_td:
+            # 提取包含页数的文本
+            pages_text = length_value_td.text
+            # 从这个文本中提取数字
+            num_pages = ''.join(filter(str.isdigit, pages_text))
+    else:
+        raise ValueError("没有找到页码标签")
+    return int(num_pages) + 1
+
+
 process = subprocess.Popen([
     "Google Chrome",
     "--remote-debugging-port=19222",
@@ -164,10 +203,12 @@ headers = {
 }
 
 # change parameters here
-initial_url = 'https://e-hentai.org/s/a36dbe168e/2717890-125'
+gallery_url = 'https://e-hentai.org/g/2729182/bd5a3e79de/'
+initial_url = 'https://e-hentai.org/s/2871a2a613/2729182-1'
 num = 400
 ex = False
 
 url_list = get_download_url_list_from_id(initial_url, num, ex)
+# num_of_pages = get_num_of_pages_from_gallery_url(gallery_url, ex)
 
 os.kill(process.pid, signal.SIGTERM)
