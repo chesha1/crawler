@@ -135,6 +135,7 @@ def download_image_from_single_url(url):
         attempts = 0
         while attempts < MAX_RETRIES:
             try:
+                requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
                 response = s.get(current_url, headers=headers, proxies=proxies, timeout=10)
                 break
             except requests.exceptions.ConnectionError as e:
@@ -204,8 +205,8 @@ headers = {
 
 # change parameters here
 gallery_url = 'https://e-hentai.org/g/2729182/bd5a3e79de/'
-initial_url = 'https://e-hentai.org/s/2871a2a613/2729182-1'
-num = 400
+initial_url = 'https://e-hentai.org/s/558f4ca23b/2733536-400'
+num = 600
 ex = False
 
 url_list = get_download_url_list_from_id(initial_url, num, ex)
