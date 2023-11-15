@@ -11,8 +11,8 @@ from tqdm import tqdm
 import sys
 
 
-# def get_download_url_list_from_id(id, num, id_encry, page, ex=False):
-def get_download_url_list_from_id(initial_url, num, ex=False):
+# def download_gallery_from_image_url_with_num(id, num, id_encry, page, ex=False):
+def download_gallery_from_image_url_with_num(initial_url, num, ex, proxy):
     result_url_list = []
     current_url = initial_url
     pbar = tqdm(range(num), desc="Collecting URLs", file=sys.stdout)
@@ -22,7 +22,10 @@ def get_download_url_list_from_id(initial_url, num, ex=False):
         while attempts < MAX_RETRIES:
             try:
                 if not ex:
-                    response = requests.get(current_url, headers=headers, proxies=proxies)
+                    if proxy:
+                        response = requests.get(current_url, headers=headers, proxies=proxies)
+                    else:
+                        response = requests.get(current_url, headers=headers)
                 else:
                     options = webdriver.ChromeOptions()
                     options.add_argument("--headless")  # 运行浏览器在后台模式
@@ -40,7 +43,10 @@ def get_download_url_list_from_id(initial_url, num, ex=False):
                         for cookie in all_cookies:
                             s.cookies.set(cookie['name'], cookie['value'])
 
-                        response = s.get(current_url, headers=headers, proxies=proxies)
+                        if proxy:
+                            response = s.get(current_url, headers=headers, proxies=proxies)
+                        else:
+                            response = s.get(current_url, headers=headers)
                 break
             except RequestException as e:
                 print(f"An error occurred: {e}. Retrying...")
@@ -68,7 +74,7 @@ def get_download_url_list_from_id(initial_url, num, ex=False):
 
     print("共采集到{}页".format(len(result_url_list)))
     print("-------------------------------------------------")
-    return result_url_list
+    # return result_url_list
 
 
 def download_single_file_using_requests(url):
@@ -82,8 +88,10 @@ def download_single_file_using_requests(url):
         try:
             # avoid ssl error
             requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
-
-            response = requests.get(url=url, headers=headers, proxies=proxies)
+            if proxy:
+                response = requests.get(url=url, headers=headers, proxies=proxies)
+            else:
+                response = requests.get(url=url, headers=headers)
             break
         except RequestException as e:
             print(f"An error occurred: {e}. Retrying...")
@@ -136,7 +144,10 @@ def download_image_from_single_url(url):
         while attempts < MAX_RETRIES:
             try:
                 requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
-                response = s.get(current_url, headers=headers, proxies=proxies, timeout=10)
+                if proxy:
+                    response = s.get(current_url, headers=headers, proxies=proxies, timeout=10)
+                else:
+                    response = s.get(current_url, headers=headers, timeout=10)
                 break
             except requests.exceptions.ConnectionError as e:
                 print(f"An error occurred: {e}. Retrying...")
@@ -150,9 +161,12 @@ def download_image_from_single_url(url):
             f.write(response.content)
 
 
-def get_num_of_pages_from_gallery_url(url, ex):
+def get_meta_data_from_gallery_url(url, ex, proxy):
     if not ex:
-        response = requests.get(url, headers=headers, proxies=proxies)
+        if proxy:
+            response = requests.get(url, headers=headers, proxies=proxies)
+        else:
+            response = requests.get(url, headers=headers)
     else:
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")  # 运行浏览器在后台模式
@@ -170,7 +184,10 @@ def get_num_of_pages_from_gallery_url(url, ex):
             for cookie in all_cookies:
                 s.cookies.set(cookie['name'], cookie['value'])
 
-            response = s.get(url, headers=headers, proxies=proxies)
+            if proxy:
+                response = s.get(url, headers=headers, proxies=proxies)
+            else:
+                response = s.get(url, headers=headers)
     soup = BeautifulSoup(response.content, 'html.parser')
     # 直接寻找包含'Length:'的td标签
     length_label = soup.find('td', string='Length:')
@@ -206,10 +223,11 @@ headers = {
 # change parameters here
 gallery_url = 'https://e-hentai.org/g/2729182/bd5a3e79de/'
 initial_url = 'https://e-hentai.org/s/558f4ca23b/2733536-400'
-num = 600
+num = 1
 ex = False
+proxy = False
 
-url_list = get_download_url_list_from_id(initial_url, num, ex)
+download_gallery_from_image_url_with_num(initial_url, num, ex, proxy)
 # num_of_pages = get_num_of_pages_from_gallery_url(gallery_url, ex)
 
 os.kill(process.pid, signal.SIGTERM)
