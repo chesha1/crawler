@@ -202,7 +202,16 @@ def get_meta_data_from_gallery_url(url, ex, proxy):
             num_pages = ''.join(filter(str.isdigit, pages_text))
     else:
         raise ValueError("没有找到页码标签")
-    return int(num_pages) + 1
+
+    gdtm_div = soup.find('div', class_='gdtm')
+    a_tag = gdtm_div.find('a')
+    first_image = a_tag['href']
+    return int(num_pages) + 1, first_image
+
+
+def download_entire_gallery(url, ex, proxy):
+    num_of_pages, first_url = get_meta_data_from_gallery_url(url, ex, proxy)
+    download_gallery_from_image_url_with_num(first_url, num_of_pages, ex, proxy)
 
 
 process = subprocess.Popen([
@@ -221,13 +230,14 @@ headers = {
 }
 
 # change parameters here
-gallery_url = 'https://e-hentai.org/g/2729182/bd5a3e79de/'
-initial_url = 'https://e-hentai.org/s/558f4ca23b/2733536-400'
-num = 1
 ex = False
 proxy = False
 
-download_gallery_from_image_url_with_num(initial_url, num, ex, proxy)
-# num_of_pages = get_num_of_pages_from_gallery_url(gallery_url, ex)
+gallery_url = 'https://e-hentai.org/g/2728697/7f859b2234/'
+download_entire_gallery(gallery_url, ex, proxy)
+
+initial_url = 'https://e-hentai.org/s/558f4ca23b/2733536-400'
+num = 400
+# download_gallery_from_image_url_with_num(initial_url, num, ex, proxy)
 
 os.kill(process.pid, signal.SIGTERM)
