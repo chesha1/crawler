@@ -1,3 +1,5 @@
+import re
+
 import requests
 from requests.exceptions import RequestException
 from selenium.common.exceptions import TimeoutException
@@ -147,7 +149,7 @@ def download_image_from_single_url(url):
                 if proxy:
                     response = s.get(current_url, headers=headers, proxies=proxies, timeout=10)
                 else:
-                    response = s.get(current_url, headers=headers, timeout=10)
+                    response = s.get(current_url, headers=headers, timeout=20)
                 break
             except requests.exceptions.ConnectionError as e:
                 print(f"An error occurred: {e}. Retrying...")
@@ -209,9 +211,55 @@ def get_meta_data_from_gallery_url(url, ex, proxy):
     return int(num_pages) + 1, first_image
 
 
+def get_meta_data_from_image_url(url, ex, proxy):
+    pattern = r"(\d+)-(\d+)$"
+    match = re.search(pattern, url)
+    _, current_page_number = match.groups()
+
+    if not ex:
+        if proxy:
+            response = requests.get(url, headers=headers, proxies=proxies)
+        else:
+            response = requests.get(url, headers=headers)
+    else:
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless")  # 运行浏览器在后台模式
+        options = webdriver.ChromeOptions()
+        options.add_experimental_option("debuggerAddress", "127.0.0.1:19222")
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--ignore-ssl-errors')
+        service = webdriver.ChromeService(executable_path='/opt/homebrew/bin/chromedriver')
+
+        # 启动浏览器
+        with webdriver.Chrome(service=service, options=options) as browser:
+            browser.get(url)
+            all_cookies = browser.get_cookies()
+            s = requests.Session()
+            for cookie in all_cookies:
+                s.cookies.set(cookie['name'], cookie['value'])
+
+            if proxy:
+                response = s.get(url, headers=headers, proxies=proxies)
+            else:
+                response = s.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    sb_div = soup.find('div', class_='sb')
+    a_tag = sb_div.find('a')
+    gallery_url = a_tag['href']
+    gallery_url = gallery_url.rsplit('/', 1)[0]
+
+    return gallery_url, int(current_page_number)
+
+
 def download_entire_gallery(url, ex, proxy):
     num_of_pages, first_url = get_meta_data_from_gallery_url(url, ex, proxy)
     download_gallery_from_image_url_with_num(first_url, num_of_pages, ex, proxy)
+
+
+def download_entire_gallery_from_image_url(url, ex, proxy):
+    gallery_url, current_page_number = get_meta_data_from_image_url(url, ex, proxy)
+    num_of_pages, _ = get_meta_data_from_gallery_url(gallery_url, ex, proxy)
+    download_gallery_from_image_url_with_num(url, num_of_pages - current_page_number + 1, ex, proxy)
 
 
 process = subprocess.Popen([
@@ -234,10 +282,9 @@ ex = False
 proxy = False
 
 gallery_url = 'https://e-hentai.org/g/2728697/7f859b2234/'
-download_entire_gallery(gallery_url, ex, proxy)
+# download_entire_gallery(gallery_url, ex, proxy)
 
-initial_url = 'https://e-hentai.org/s/558f4ca23b/2733536-400'
-num = 400
-# download_gallery_from_image_url_with_num(initial_url, num, ex, proxy)
+initial_url = 'https://e-hentai.org/s/66ba0ffa82/2743832-69'
+download_entire_gallery_from_image_url(initial_url, ex, proxy)
 
 os.kill(process.pid, signal.SIGTERM)
