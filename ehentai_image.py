@@ -262,6 +262,27 @@ def download_entire_gallery_from_image_url(url, ex, proxy):
     download_gallery_from_image_url_with_num(url, num_of_pages - current_page_number + 1, ex, proxy)
 
 
+def download_from_url(url, ex, proxy):
+    # 正则表达式匹配第一种 URL 类型
+    ex_string = '-'
+    if ex:
+        ex_string = 'x'
+
+    pattern1 = r'https://e{}hentai\.org/g/[0-9a-zA-Z]+/[0-9a-zA-Z]+/'.format(ex_string)
+    # 正则表达式匹配第二种 URL 类型
+    pattern2 = r'https://e{}hentai\.org/s/[0-9a-zA-Z]+/[0-9]+-[0-9]+'.format(ex_string)
+
+    # gallery url
+    if re.match(pattern1, url):
+        download_entire_gallery(url, ex, proxy)
+
+    # image url
+    elif re.match(pattern2, url):
+        download_entire_gallery_from_image_url(url, ex, proxy)
+    else:
+        print("未知的 URL 类型")
+
+
 process = subprocess.Popen([
     "Google Chrome",
     "--remote-debugging-port=19222",
@@ -280,11 +301,8 @@ headers = {
 # change parameters here
 ex = False
 proxy = False
+url = 'https://e-hentai.org/s/7b25c310f4/2744786-185'
 
-gallery_url = 'https://e-hentai.org/g/2728697/7f859b2234/'
-# download_entire_gallery(gallery_url, ex, proxy)
-
-initial_url = 'https://e-hentai.org/s/66ba0ffa82/2743832-69'
-download_entire_gallery_from_image_url(initial_url, ex, proxy)
+download_from_url(url, ex, proxy)
 
 os.kill(process.pid, signal.SIGTERM)
