@@ -12,6 +12,8 @@ from fake_useragent import UserAgent
 
 def from_69shuba(id, path):
     # source: https://www.69shuba.com/
+    # 这个函数不再有效 从 2024 Feb 26th 起
+    # 69 书吧更新了非常强力的反爬
     table_of_content_url = 'https://www.69shuba.com/book/{}/'.format(id)
     response = requests.get(table_of_content_url)
     response.raise_for_status()
