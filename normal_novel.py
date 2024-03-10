@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 import re
 from selenium import webdriver
 from fake_useragent import UserAgent
+from opencc import OpenCC
 
 def from_69shuba(id, path):
     # source: https://www.69shuba.com/
@@ -22,7 +23,7 @@ def from_69shuba(id, path):
 
     # get name of the article
     scripts = soup.find_all('script')
-    bookinfo_str = None
+    bookinfo_str = ""
     for script in scripts:
         if script.string is None:
             continue
@@ -154,11 +155,45 @@ def from_ddxs(name, path):
     print('aaa')
 
 
-process = subprocess.Popen([
-    "Google Chrome",
-    "--remote-debugging-port=19222",
-    "--user-data-dir=" + os.path.expanduser('~/ChromeProfile/')
-])
+def from_ak(id, path) -> None:
+    # source: https://www.06ak.com/
+    table_of_content_url = 'https://www.06ak.com/book/{}'.format(id)
+    response = requests.get(table_of_content_url)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, 'html.parser')
+    meta_tag = soup.find('meta', {'property': 'og:title'})
+    title = meta_tag.get('content')[1:-1]
+
+    cc = OpenCC('t2s')
+    title = cc.convert(title)
+
+    table_of_content_tags = soup.find('ul', id='ul_all_chapters')
+    chapters = table_of_content_tags.find_all('li')
+
+    file_path = '{}{}.txt'.format(path, title)
+    file = open(file_path, 'w', encoding='utf-8')
+
+    for chapter in tqdm(chapters, desc="Downloading", file=sys.stdout):
+        file.write(cc.convert(chapter.a['title']) + '\n')
+        for i in ["","_2"]:
+            index = chapter.a['href'].split(".")[0] + i + ".html"
+            chapter_url = 'https://www.06ak.com' + index
+            response = requests.get(chapter_url)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+            content = soup.find('article', id='article').text
+            content = cc.convert(content)
+            file.write(content)
+            file.write('\n')
+            time.sleep(1)
+        file.write('\n')
+    file.close()
+
+
+    print('aaa')
+
+    
+
 
 proxies = {
     'http': 'socks5h://127.0.0.1:7890',
@@ -166,9 +201,9 @@ proxies = {
 }
 
 path = os.path.expanduser('~/Downloads/')
-id = 10043551
+id = 150720
 
-from_69shuba(id, path)
+from_ak(id, path)
 
 
-os.kill(process.pid, signal.SIGTERM)
+# os.kill(process.pid, signal.SIGTERM)
