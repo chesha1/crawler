@@ -190,20 +190,12 @@ def from_ak(id, path) -> None:
     file.close()
 
 
-    print('aaa')
-
-    
-
-
 proxies = {
     'http': 'socks5h://127.0.0.1:7890',
     'https': 'socks5h://127.0.0.1:7890'
 }
 
 path = os.path.expanduser('~/Downloads/')
-id = 150720
+id = 47650
 
 from_ak(id, path)
-
-
-# os.kill(process.pid, signal.SIGTERM)

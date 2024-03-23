@@ -32,7 +32,7 @@ path = 'C:/Users/chesha1/OneDrive - 123/文件/resources/bili_images/'
 
 options = webdriver.ChromeOptions()
 options.add_argument(
-    r'user-data-dir=C:\Users\chesha1\AppData\Local\Google\Chrome\User Data - Webdriver')  # 加载浏览器配置
+    r'user-data-dir=C:/Users/chesha1/AppData/Local/Google/Chrome/User Data - Webdriver')  # 加载浏览器配置
 with webdriver.Chrome(options=options) as browser:
     for url in url_json_list:
         browser.get(url)
