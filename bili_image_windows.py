@@ -30,11 +30,6 @@ url_prefix = 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic
 url_json_list = [url_prefix + i for i in id]
 
 
-
-
-
-
-
 process = subprocess.Popen([
     "chrome",
     "--remote-debugging-port=19222"
