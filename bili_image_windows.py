@@ -2,6 +2,8 @@ from selenium import webdriver
 import requests
 import json
 import time
+import subprocess
+import os
 
 
 def download(url, file_name):
@@ -28,11 +30,20 @@ url_prefix = 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic
 url_json_list = [url_prefix + i for i in id]
 
 
+
+
+
+
+
+process = subprocess.Popen([
+    "chrome",
+    "--remote-debugging-port=19222"
+])
+
 path = 'C:/Users/chesha1/OneDrive - 123/文件/resources/bili_images/'
 
 options = webdriver.ChromeOptions()
-options.add_argument(
-    r'user-data-dir=C:/Users/chesha1/AppData/Local/Google/Chrome/User Data - Webdriver')  # 加载浏览器配置
+options.add_experimental_option("debuggerAddress", "127.0.0.1:19222")
 with webdriver.Chrome(options=options) as browser:
     for url in url_json_list:
         browser.get(url)
@@ -66,3 +77,4 @@ with webdriver.Chrome(options=options) as browser:
 with open("bili.txt", "r+") as f:
     f.truncate(0)
 
+os.kill(process.pid, signal.SIGTERM)
