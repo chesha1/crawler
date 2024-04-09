@@ -1,9 +1,12 @@
+# 运行这个文件前，需要关闭其他已经打开的 Chrome
+
 from selenium import webdriver
 import requests
 import json
 import time
 import subprocess
 import os
+import signal
 
 
 def download(url, file_name):
