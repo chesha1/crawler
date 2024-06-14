@@ -10,14 +10,14 @@ def get_toplist(url, proxy):
     else:
         response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.content, 'html.parser')
-    gl3c_divs_1 = soup.find_all('td', class_='gl3c')
+    gl3c_divs_1 = soup.find_all('body')
 
     if proxy:
         response = requests.get(url + '&p=1', headers=headers, proxies=proxies)
     else:
         response = requests.get(url + '&p=1', headers=headers)
     soup = BeautifulSoup(response.content, 'html.parser')
-    gl3c_divs_2 = soup.find_all('td', class_='gl3c')
+    gl3c_divs_2 = soup.find_all('body')
 
     gl3c_divs = gl3c_divs_1 + gl3c_divs_2
 
